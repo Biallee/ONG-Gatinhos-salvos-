@@ -1,0 +1,169 @@
+<!DOCTYPE html> 
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro | ONG Gatinhos salvos</title>
+    
+    <link rel="stylesheet" href="style.css"> 
+    <style>
+        input:invalid:not(:placeholder-shown) { border: 2px solid red; }
+        input:valid:not(:placeholder-shown) { border: 1px solid green; }
+        fieldset { border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 5px; }
+        legend { font-weight: bold; padding: 0 10px; }
+    </style>
+</head>
+<body>
+    
+    <header>
+        <h1>ONG Gatinhos Salvos</h1>
+        
+        <nav>
+            <ul>
+                <li><a href="index.html">Início</a></li> 
+                <li><a href="projeto.html">Projeto</a></li>
+                <li><a href="cadastro.html">Cadastro</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <main>
+        <h2>Cadastre-se</h2> 
+
+        <img class="centralizar-img" src="imagens/resgatados.jpg" alt="Faça seu cadastro para ajudar">
+
+        <form action="#" method="POST" id="cadastroForm">
+            
+            <fieldset>
+                <legend>Informações Pessoais</legend>
+
+                <div class="form-group">
+                    <label for="nome">Nome Completo:</label>
+                    <input type="text" id="nome" name="nome" required 
+                           minlength="3" placeholder="Seu nome completo">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">E-mail:</label>
+                    <input type="email" id="email" name="email" required 
+                           placeholder="email@exemplo.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="dataNascimento">Data de Nascimento:</label>
+                    <input type="date" id="dataNascimento" name="dataNascimento" required> 
+                </div>
+
+                <div class="form-group">
+                    <label for="cpf">CPF:</label>
+                    <input type="text" id="cpf" name="cpf" required 
+                           maxlength="14" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}"
+                           placeholder="000.000.000-00" title="Formato: 000.000.000-00">
+                </div>
+
+                <div class="form-group">
+                    <label for="telefone">Telefone:</label>
+                    <input type="tel" id="telefone" name="telefone" required 
+                           maxlength="15" pattern="\(\d{2}\)\s?\d{4,5}-\d{4}" 
+                           placeholder="(99) 99999-9999" title="Formato: (99) 99999-9999 ou (99) 9999-9999">
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Endereço e Contato</legend>
+
+                <div class="form-group">
+                    <label for="cep">CEP:</label>
+                    <input type="text" id="cep" name="cep" required 
+                           maxlength="9" pattern="\d{5}-\d{3}" 
+                           placeholder="00000-000" title="Formato: 00000-000">
+                </div>
+
+                <div class="form-group">
+                    <label for="endereco">Endereço:</label>
+                    <input type="text" id="endereco" name="endereco" required 
+                           placeholder="Rua, Av., Número">
+                </div>
+
+                <div class="form-group">
+                    <label for="cidade">Cidade:</label>
+                    <input type="text" id="cidade" name="cidade" required 
+                           placeholder="Ex.: São Paulo">
+                </div>
+                
+                <div class="form-group">
+                    <label for="estado">Estado:</label>
+                    <select id="estado" name="estado" required>
+                        <option value="" disabled selected>Selecione o Estado</option>
+                        <option value="SP">São Paulo</option>
+                        <option value="MG">Minas Gerais</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="BA">Bahia</option>
+                        <option value="PR">Paraná</option>
+                        <option value="RS">Rio Grande do Sul</option>
+                        <option value="PE">Pernambuco</option>
+                        <option value="CE">Ceará</option>
+                        <option value="PA">Pará</option>
+                        <option value="SC">Santa Catarina</option>
+                    </select>
+                </div>
+
+            </fieldset>
+
+            <button type="submit">Enviar Cadastro</button>
+        </form>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 ONG Gatinhos Salvos</p>
+    </footer>
+
+    <script>
+
+        function mask(o, f) {
+            setTimeout(() => {
+                const v = f(o.value);
+                if (v !== o.value) {
+                    o.value = v;
+                }
+            }, 1);
+        }
+
+        function maskCPF(v) {
+            v = v.replace(/\D/g, ""); 
+            v = v.replace(/(\d{3})(\d)/, "$1.$2"); 
+            v = v.replace(/(\d{3})(\d)/, "$1.$2"); 
+            v = v.replace(/(\d{3})(\d{1,2})$/, "$1-$2"); 
+            return v;
+        }
+
+        function maskCEP(v) {
+            v = v.replace(/\D/g, ""); 
+            v = v.replace(/^(\d{5})(\d)/, "$1-$2"); 
+            return v;
+        }
+
+        function maskTelefone(v) {
+            v = v.replace(/\D/g, ""); 
+            v = v.replace(/^(\d{2})(\d)/g, "($1) $2"); 
+            v = v.replace(/(\d{4})(\d{4})$/, "$1-$2"); 
+            if (v.length > 14) { 
+                 v = v.replace(/(\d{5})(\d{4})$/, "$1-$2"); 
+            }
+            return v;
+        }
+
+        document.getElementById('cpf').addEventListener('keyup', function() {
+            mask(this, maskCPF);
+        });
+
+        document.getElementById('cep').addEventListener('keyup', function() {
+            mask(this, maskCEP);
+        });
+
+        document.getElementById('telefone').addEventListener('keyup', function() {
+            mask(this, maskTelefone);
+        });
+    </script>
+</body>
+</html>
