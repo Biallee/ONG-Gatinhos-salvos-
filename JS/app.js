@@ -3,7 +3,7 @@
 // ==========================================================
 
 const templates = {
-    // Template para a página INÍCIO (Conteúdo do <main> original do index.html)
+    // Template para a página INÍCIO
     home: `
         <section>
             <h2>Quem somos?</h2>
@@ -24,9 +24,10 @@ const templates = {
         </section>
     `,
 
-    // Template para a página PROJETO (Conteúdo do <main> de projeto.html)
+    // Template PROJETO (AGORA INCLUI O DISPLAY DO LOCAL STORAGE)
     projeto: `
         <h2>Conheça nosso Projeto</h2>
+
         <section>
             <h3>Nosso Foco</h3>
             <p>A ONG Gatinhos Salvos concentra seus esforços no resgate, reabilitação e adoção de felinos abandonados em Curitiba e região metropolitana.</p>
@@ -44,7 +45,7 @@ const templates = {
         <img class="centralizar-img" src="../imagens/homem.jpg" alt="Gatos resgatados">
     `,
 
-    // Template para a página CADASTRO (Conteúdo do <main> de cadastro.html)
+    // Template CADASTRO
     cadastro: `
         <h2>Cadastre-se</h2>
         <img class="centralizar-img" src="../imagens/resgatados.jpg" alt="Faça seu cadastro para ajudar">
@@ -93,32 +94,33 @@ const templates = {
 };
 
 // ==========================================================
-// 2. Lógica do Single Page Application (SPA) e Manipulação do DOM
+// 2. Variáveis Globais e Funções do SPA
 // ==========================================================
 
 const spaContainer = document.getElementById('spa-container');
 const navLinks = document.querySelectorAll('nav a');
 
-// Função principal para carregar o conteúdo da rota
+
 function loadRoute(route) {
+    // 1. Acessa o template (e usa 'home' como fallback)
     const templateHTML = templates[route] || templates['home']; 
     
-    // 1. Manipulação do DOM: Injeta o novo conteúdo
+    // 2. Injeta o HTML no container
     spaContainer.innerHTML = templateHTML;
 
-    // 2. Atualiza a URL (SPA)
+    // 3. Atualiza a URL e Título
     window.history.pushState({ route: route }, `${route.toUpperCase()} | ONG Gatinhos Salvos`, `/${route}`);
-    
-    // 3. Opcional: Atualiza o título da página
     document.title = `${route.charAt(0).toUpperCase() + route.slice(1)} | ONG Gatinhos Salvos`;
 
-    // 4. Se a rota for 'cadastro', configura o listener do formulário
+    // 4. Configura funcionalidades específicas da rota
     if (route === 'cadastro') {
         setupCadastroForm();
+    } else if (route === 'projeto') {
+        displayLocalStorageData();
     }
 }
 
-// Lógica para lidar com o clique nos links de navegação
+
 function handleNavClick(event) {
     event.preventDefault(); 
     const route = event.target.getAttribute('data-route');
@@ -128,51 +130,108 @@ function handleNavClick(event) {
     }
 }
 
-// Lógica para lidar com a navegação do navegador (Voltar/Avançar)
-window.addEventListener('popstate', (event) => {
-    // Extrai a rota da URL ou volta para 'home'
+
+window.addEventListener('popstate', () => {
     const path = window.location.pathname.slice(1) || 'home';
     loadRoute(path);
 });
 
 
 // ==========================================================
-// 3. Funcionalidades Avançadas (Ex: Manipulação do Formulário)
+// 3. Funcionalidades Avançadas (Local Storage e Formulário)
 // ==========================================================
 
+// Função para salvar dados no Local Storage (SET)
 function setupCadastroForm() {
     const form = document.getElementById('cadastroForm');
     if (form) {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // Exemplo de captura de dados
-            const nome = document.getElementById('nome').value;
-            const email = document.getElementById('email').value;
-
-            // Simula uma funcionalidade real (salvando no LocalStorage)
-            const userData = { nome, email, timestamp: new Date().toLocaleString() };
+            const userData = {
+                nome: document.getElementById('nome').value,
+                email: document.getElementById('email').value,
+                data: new Date().toLocaleDateString('pt-BR')
+            };
             
-            // Armazenamento Local: Salva o último usuário cadastrado
             localStorage.setItem('lastUserCadastro', JSON.stringify(userData));
 
-            alert(`Cadastro de ${nome} recebido com sucesso! Dados salvos no Local Storage.`);
+            alert(`Cadastro de ${userData.nome} salvo! (Dados persistem no Local Storage)`);
             form.reset();
+        });
+    }
+}
+
+// Função para ler dados do Local Storage e exibir (GET)
+function displayLocalStorageData() {
+    const displayElement = document.getElementById('local-storage-display');
+    if (!displayElement) return;
+
+    const dataString = localStorage.getItem('lastUserCadastro');
+    
+    if (dataString) {
+        try {
+            const userData = JSON.parse(dataString);
+            displayElement.innerHTML = `
+                <p>Nome: <strong>${userData.nome}</strong></p>
+                <p>Email: <strong>${userData.email}</strong></p>
+                <p><small>Salvo em: ${userData.data}</small></p>
+            `;
+        } catch (e) {
+            displayElement.innerHTML = `<p>Erro ao ler dados do Local Storage.</p>`;
+        }
+    } else {
+        displayElement.innerHTML = `<p>Nenhum cadastro encontrado localmente. Cadastre-se na página "Cadastro".</p>`;
+    }
+}
+
+// ==========================================================
+// 4. Modo Escuro Acessível (Theme Toggle)
+// ==========================================================
+
+function loadSavedTheme() {
+    const savedTheme = localStorage.getItem('theme-preference');
+
+    if (savedTheme) {
+        document.body.className = savedTheme;
+    } else {
+        document.body.className = 'light-theme'; 
+    }
+}
+
+function setupThemeToggle() {
+    const toggleButton = document.getElementById('theme-toggle');
+    
+    if (toggleButton) {
+        toggleButton.addEventListener('click', () => {
+            const isDark = document.body.classList.contains('dark-theme');
+            
+            if (isDark) {
+                document.body.classList.remove('dark-theme');
+                document.body.classList.add('light-theme');
+                localStorage.setItem('theme-preference', 'light-theme');
+            } else {
+                document.body.classList.remove('light-theme');
+                document.body.classList.add('dark-theme');
+                localStorage.setItem('theme-preference', 'dark-theme');
+            }
         });
     }
 }
 
 
 // ==========================================================
-// 4. Inicialização do SPA
+// 5. Inicialização do SPA
 // ==========================================================
 
-// Adiciona os listeners de clique aos links de navegação
+// O uso do loadSavedTheme e setupThemeToggle é OBRIGATÓRIO
+loadSavedTheme(); 
+setupThemeToggle(); 
+
 navLinks.forEach(link => {
     link.addEventListener('click', handleNavClick);
 });
 
-// Determina a rota inicial ao carregar a página
-// O SPA verifica a URL atual (ex: /projeto) ou carrega 'home'
+// A última linha que garante que o conteúdo 'home' seja injetado
 const initialRoutePath = window.location.pathname.slice(1) || 'home';
 loadRoute(initialRoutePath);
